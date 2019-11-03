@@ -4,11 +4,13 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
+import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.fragment.app.Fragment;
+import androidx.core.content.ContextCompat;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -58,6 +60,14 @@ public class MenusFragment extends Fragment {
         menuBlue = (FloatingActionMenu) view.findViewById(R.id.menu_blue);
         menuDown = (FloatingActionMenu) view.findViewById(R.id.menu_down);
         menuLabelsRight = (FloatingActionMenu) view.findViewById(R.id.menu_labels_right);
+
+        Typeface typeface = ResourcesCompat.getFont(getActivity(), R.font.product_sans_regular);
+        menuRed.setLabelTypeface(typeface);
+        menuYellow.setLabelTypeface(typeface);
+        menuGreen.setLabelTypeface(typeface);
+        menuBlue.setLabelTypeface(typeface);
+        menuDown.setLabelTypeface(typeface);
+        menuLabelsRight.setLabelTypeface(typeface);
 
         fab1 = (FloatingActionButton) view.findViewById(R.id.fab1);
         fab2 = (FloatingActionButton) view.findViewById(R.id.fab2);

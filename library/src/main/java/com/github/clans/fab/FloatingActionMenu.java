@@ -24,6 +24,9 @@ import android.view.animation.AnticipateInterpolator;
 import android.view.animation.Interpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
+import android.widget.TextView;
+
+import androidx.core.content.res.ResourcesCompat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -530,6 +533,7 @@ public class FloatingActionMenu extends ViewGroup {
         fab.setTag(R.id.fab_label, label);
     }
 
+
     private void setLabelEllipsize(Label label) {
         switch (mLabelsEllipsize) {
             case 1:
@@ -1004,6 +1008,23 @@ public class FloatingActionMenu extends ViewGroup {
 
     public String getMenuButtonLabelText() {
         return mMenuLabelText;
+    }
+
+    /**
+     * Sets the font for all labels in the menu
+     *
+     * @param typeface The font to be applied to the labels in the menu
+     */
+    public void setLabelTypeface(Typeface typeface) {
+        int count = getChildCount();
+
+        for (int i = 0; i < count; i++) {
+            View view = getChildAt(i);
+            if (view instanceof TextView) {
+                TextView tv = (TextView) view;
+                tv.setTypeface(typeface);
+            }
+        }
     }
 
     public void setOnMenuButtonClickListener(OnClickListener clickListener) {
