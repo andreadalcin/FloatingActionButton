@@ -6,6 +6,7 @@
         <attr name="fab_colorPressed" format="color" />
         <attr name="fab_colorDisabled" format="color" />
         <attr name="fab_colorRipple" format="color" />
+        <attr name="fab_colorTint" format="color" />
         <attr name="fab_showShadow" format="boolean" />
         <attr name="fab_shadowColor" format="color" />
         <attr name="fab_shadowRadius" format="dimension" />
@@ -15,6 +16,7 @@
             <enum name="normal" value="0" />
             <enum name="mini" value="1" />
         </attr>
+        <attr name="fab_imagePadding" format="dimension" />
         <attr name="fab_showAnimation" format="reference" />
         <attr name="fab_hideAnimation" format="reference" />
         <attr name="fab_label" format="string" />

@@ -15,6 +15,7 @@ import android.graphics.RectF;
 import android.graphics.Xfermode;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.InsetDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.RippleDrawable;
 import android.graphics.drawable.ShapeDrawable;
@@ -33,10 +34,13 @@ import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
-public class FloatingActionButton extends ImageButton {
+import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.core.graphics.drawable.DrawableCompat;
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
+
+public class FloatingActionButton extends AppCompatImageButton {
 
     public static final int SIZE_NORMAL = 0;
     public static final int SIZE_MINI = 1;
@@ -59,13 +63,15 @@ public class FloatingActionButton extends ImageButton {
     private int mColorRipple;
     private Drawable mIcon;
     private int mIconSize = Util.dpToPx(getContext(), 24f);
+    private int mImagePadding;
     private Animation mShowAnimation;
     private Animation mHideAnimation;
     private String mLabelText;
-    private OnClickListener mClickListener;
+    private View.OnClickListener mClickListener;
     private Drawable mBackgroundDrawable;
     private boolean mUsingElevation;
     private boolean mUsingElevationCompat;
+    private int mColorTint;
 
     // Progress
     private boolean mProgressBarEnabled;
@@ -111,7 +117,7 @@ public class FloatingActionButton extends ImageButton {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public FloatingActionButton(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-        super(context, attrs, defStyleAttr, defStyleRes);
+        super(context, attrs, defStyleAttr);
         init(context, attrs, defStyleAttr);
     }
 
@@ -121,12 +127,14 @@ public class FloatingActionButton extends ImageButton {
         mColorPressed = attr.getColor(R.styleable.FloatingActionButton_fab_colorPressed, 0xFFE75043);
         mColorDisabled = attr.getColor(R.styleable.FloatingActionButton_fab_colorDisabled, 0xFFAAAAAA);
         mColorRipple = attr.getColor(R.styleable.FloatingActionButton_fab_colorRipple, 0x99FFFFFF);
+        mColorTint = attr.getColor(R.styleable.FloatingActionButton_fab_colorTint, 0xFF757575);
         mShowShadow = attr.getBoolean(R.styleable.FloatingActionButton_fab_showShadow, true);
         mShadowColor = attr.getColor(R.styleable.FloatingActionButton_fab_shadowColor, 0x66000000);
         mShadowRadius = attr.getDimensionPixelSize(R.styleable.FloatingActionButton_fab_shadowRadius, mShadowRadius);
         mShadowXOffset = attr.getDimensionPixelSize(R.styleable.FloatingActionButton_fab_shadowXOffset, mShadowXOffset);
         mShadowYOffset = attr.getDimensionPixelSize(R.styleable.FloatingActionButton_fab_shadowYOffset, mShadowYOffset);
         mFabSize = attr.getInt(R.styleable.FloatingActionButton_fab_size, SIZE_NORMAL);
+        mImagePadding = attr.getDimensionPixelSize(R.styleable.FloatingActionButton_fab_imagePadding, 0);
         mLabelText = attr.getString(R.styleable.FloatingActionButton_fab_label);
         mShouldProgressIndeterminate = attr.getBoolean(R.styleable.FloatingActionButton_fab_progress_indeterminate, false);
         mProgressColor = attr.getColor(R.styleable.FloatingActionButton_fab_progress_color, 0xFF009688);
@@ -342,24 +350,24 @@ public class FloatingActionButton extends ImageButton {
     }
 
     void updateBackground() {
+        Drawable icon = DrawableCompat.wrap(getIconDrawable());
+        DrawableCompat.setTint(icon, mColorTint);
+
         LayerDrawable layerDrawable;
         if (hasShadow()) {
             layerDrawable = new LayerDrawable(new Drawable[]{
                     new Shadow(),
                     createFillDrawable(),
-                    getIconDrawable()
+                    new InsetDrawable(icon, mImagePadding)
             });
         } else {
             layerDrawable = new LayerDrawable(new Drawable[]{
                     createFillDrawable(),
-                    getIconDrawable()
+                    new InsetDrawable(icon, mImagePadding)
             });
         }
 
-        int iconSize = -1;
-        if (getIconDrawable() != null) {
-            iconSize = Math.max(getIconDrawable().getIntrinsicWidth(), getIconDrawable().getIntrinsicHeight());
-        }
+        int iconSize = Math.max(icon.getIntrinsicWidth(), icon.getIntrinsicHeight());
         int iconOffset = (getCircleSize() - (iconSize > 0 ? iconSize : mIconSize)) / 2;
         int circleInsetHorizontal = hasShadow() ? mShadowRadius + Math.abs(mShadowXOffset) : 0;
         int circleInsetVertical = hasShadow() ? mShadowRadius + Math.abs(mShadowYOffset) : 0;
@@ -369,13 +377,6 @@ public class FloatingActionButton extends ImageButton {
             circleInsetVertical += mProgressWidth;
         }
 
-        /*layerDrawable.setLayerInset(
-                mShowShadow ? 1 : 0,
-                circleInsetHorizontal,
-                circleInsetVertical,
-                circleInsetHorizontal,
-                circleInsetVertical
-        );*/
         layerDrawable.setLayerInset(
                 hasShadow() ? 2 : 1,
                 circleInsetHorizontal + iconOffset,
@@ -503,7 +504,7 @@ public class FloatingActionButton extends ImageButton {
         startAnimation(mHideAnimation);
     }
 
-    OnClickListener getOnClickListener() {
+    View.OnClickListener getOnClickListener() {
         return mClickListener;
     }
 
@@ -716,7 +717,7 @@ public class FloatingActionButton extends ImageButton {
         }
     }
 
-    static class ProgressSavedState extends BaseSavedState {
+    static class ProgressSavedState extends View.BaseSavedState {
 
         float mCurrentProgress;
         float mTargetProgress;
@@ -788,6 +789,8 @@ public class FloatingActionButton extends ImageButton {
 
     /* ===== API methods ===== */
 
+
+
     @Override
     public void setImageDrawable(Drawable drawable) {
         if (mIcon != drawable) {
@@ -798,20 +801,22 @@ public class FloatingActionButton extends ImageButton {
 
     @Override
     public void setImageResource(int resId) {
-        Drawable drawable = getResources().getDrawable(resId);
+        Drawable drawable = VectorDrawableCompat.create(getResources(), resId, null);
         if (mIcon != drawable) {
             mIcon = drawable;
             updateBackground();
         }
     }
 
+
+
     @Override
-    public void setOnClickListener(final OnClickListener l) {
+    public void setOnClickListener(final View.OnClickListener l) {
         super.setOnClickListener(l);
         mClickListener = l;
         View label = (View) getTag(R.id.fab_label);
         if (label != null) {
-            label.setOnClickListener(new OnClickListener() {
+            label.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (mClickListener != null) {
